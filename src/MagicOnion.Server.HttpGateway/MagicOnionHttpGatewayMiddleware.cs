@@ -124,13 +124,20 @@ public class MagicOnionHttpGatewayMiddleware
                     body = "[]";
                 }
 
+                if (handler.RequestType.FullName.StartsWith(typeof(DynamicArgumentTuple<,>).FullName[..^1])
+                    && handler.MethodInfo.GetParameters().All(t => t.IsNullable())
+                    && string.IsNullOrWhiteSpace(body))
+                {
+                    body = "{}";
+                }
+
                 if (handler.RequestType == typeof(Nil) && string.IsNullOrWhiteSpace(body))
                 {
                     deserializedObject = Nil.Default;
                 }
                 else
                 {
-                    deserializedObject = Newtonsoft.Json.JsonConvert.DeserializeObject(body, handler.RequestType);
+                    deserializedObject = JsonConvert.DeserializeObject(body, handler.RequestType);
                 }
             }
 
